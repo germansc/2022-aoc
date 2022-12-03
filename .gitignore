@@ -1,0 +1,7 @@
+# The simplest gitignore
+# ----------------------
+
+# Just ignore any `build` dir, except for its Makefile.
+**/build/*
+!**/build/Makefile
+
