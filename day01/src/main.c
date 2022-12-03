@@ -11,19 +11,18 @@ int32_t main()
 
     do
     {
-        int32_t result;
-
+        /* Read lines from stdin until EOF. From fgets man, NULL is returned
+         * when EOF is reached. */
         line = fgets(buffer, sizeof(buffer), stdin);
-        result = sscanf(buffer, "%u", &cal);
 
-        if ( (line != NULL) && (result == 1) )
+        if ((line != NULL) && (sscanf(buffer, "%u", &cal) == 1))
         {
-            /* We got a match... add it to the toll. */
+            /* We got a pattern match... add cals to the sum. */
             sum += cal;
 
         } else {
 
-            /* No match, no EOF... so it's an elf separator. */
+            /* No match or EOF... in any case is an elf separator. */
             if (sum > best[0])
             {
                 best[2] = best[1];
@@ -40,8 +39,11 @@ int32_t main()
         }
     } while (line != NULL);
 
+    /* Print the results for both parts of the challenge. */
     printf("The top elf is carrying %u calories\n", best[0]);
-    printf("The top 3 elfs are carrying %u calories combined\n\n", best[0] + best[1] + best[2]);
+    printf("The top 3 elfs are carrying %u calories combined\n\n",
+           best[0] + best[1] + best[2]);
+
     return 0;
 }
 
