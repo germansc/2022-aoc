@@ -6,13 +6,13 @@ Each Challenge is solved under a `dayXX` directory with the following
 structure:
 
 ```
-dayXX
+day04
 ├── build
 │   └── Makefile
+├── src
+│   └── main.c
 ├── Challenge.md
-├── Input.txt
-└── src
-    └── main.c
+└── Input.txt
 ```
 * **build** contains the Makefile for compiling the solution.
 * **src** contains the solution code.
