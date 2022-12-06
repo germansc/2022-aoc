@@ -6,7 +6,7 @@ Each Challenge is solved under a `dayXX` directory with the following
 structure:
 
 ```
-day04
+dayXX
 ├── build
 │   └── Makefile
 ├── src
