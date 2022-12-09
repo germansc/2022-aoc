@@ -13,7 +13,7 @@ typedef struct {
     uint32_t size;
 } fileType;
 
-/* Directories could be represented with a linked list with one parent and 
+/* Directories could be represented with a linked list with one parent and
  * multiple child nodes.
  * */
 typedef struct dirType_s {
@@ -59,7 +59,7 @@ dirType* createDir(const char* name, dirType* parent)
         printf("> Cannot create more dirs.\n");
         return NULL;
     }
-    
+
     dirType* ptr = malloc(sizeof(dirType));
     if (ptr == NULL)
         return NULL;
@@ -67,7 +67,7 @@ dirType* createDir(const char* name, dirType* parent)
     /* Initialize all bytes of the struct to 0. */
     memset(ptr, 0, sizeof(dirType));
     strncpy(ptr->name, name, MAX_FILENAME_LENGHT-1);
-    
+
     ptr->parent = parent;
     disk.dirs[disk.indx++] = ptr;
 
@@ -83,7 +83,7 @@ dirType* processCommand(const char *command, dirType *curr)
     if (command[2] != 'c')
         return curr;
 
-    if (sscanf(command, "$ cd %s", dirname) != 1)
+    if (sscanf(command, "$ cd %31s", dirname) != 1)
         return curr;
 
     /* CD command:
@@ -110,7 +110,7 @@ dirType* processCommand(const char *command, dirType *curr)
                 break;
             }
         }
-   
+
     return next;
 }
 
@@ -121,9 +121,9 @@ void processFile(char* item, dirType* curr)
     char filename[MAX_FILENAME_LENGHT];
 
     /* Try to parse. */
-    if (sscanf(item, "%u %s", &filesize, filename) != 2)
+    if (sscanf(item, "%u %31s", &filesize, filename) != 2)
         return;
-    
+
     /* Find an empty item in the file list. */
     uint8_t i;
     for (i = 0; i < MAX_ITEMS_IN_DIR; i++)
@@ -131,7 +131,7 @@ void processFile(char* item, dirType* curr)
             break;
 
     /* If the list was full, skip. */
-    if (i == MAX_INPUT_LINE_LENGHT)
+    if (i == MAX_ITEMS_IN_DIR)
     {
         printf(">> ERROR: Directory full!\n");
         return;
@@ -169,7 +169,7 @@ int32_t main()
         /* Process commands */
         if (line[0] == '$')
             currentDir = processCommand(line, currentDir);
-        else if (line[0] == 'd') 
+        else if (line[0] == 'd')
             /* "dir xxx" listing, can be skipped. */
             continue;
         else
@@ -194,12 +194,12 @@ int32_t main()
                 min = i;
 
     /* Print the results for both parts of the challenge. */
-    printf("Part 1: %ld\n", part1);
-    printf("Part 2: %ld\n", disk.dirs[min]->dirsize);
+    printf("Part 1: %lu\n", part1);
+    printf("Part 2: %lu\n", disk.dirs[min]->dirsize);
 
-    printf("\nDeleting directory %s would free up %lu bytes, resulting in: %lu\n", 
-        disk.dirs[min]->name, 
-        disk.dirs[min]->dirsize, 
+    printf("\nDeleting directory %s would free up %lu bytes, resulting in: %lu\n",
+        disk.dirs[min]->name,
+        disk.dirs[min]->dirsize,
         freespace + disk.dirs[min]->dirsize);
 
 
