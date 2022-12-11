@@ -30,3 +30,8 @@ make
 ./dayXX < ../Input.txt
 ```
 
+Some puzzles require a different code to be compiled for part1 or part2 of the
+challenge (day 11 for example). In those cases, the default target of `make`
+compiles the part 2 of the puzzle, and a `part1` target is provided to compile
+the first one.
+
