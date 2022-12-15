@@ -171,12 +171,12 @@ char* parseNestedLists(char* ptr, listType* list)
 }
 
 
-int8_t compareLists(listType* list1, listType* list2)
+int32_t compareLists(listType* list1, listType* list2)
 {
     uint32_t i, minsize;
     listType aux = { 0 };
     itemType auxItem = { 0 };
-    int8_t ret;
+    int32_t ret;
 
     if (list1->size <= list2->size)
         minsize = list1->size;
@@ -205,14 +205,14 @@ int8_t compareLists(listType* list1, listType* list2)
             else if (i1 < i2)
                 return 1;
             else
-                return 0;
+                return -1;
         }
 
         /* Case 2: Both lists */
         else if (left->type == list_t && right->type == list_t)
         {
             ret = compareLists(left->dataPtr, right->dataPtr);
-            if (ret != -1)
+            if (ret != 0)
                 return ret;
         }
 
@@ -226,7 +226,7 @@ int8_t compareLists(listType* list1, listType* list2)
             aux.size = 1;
 
             ret = compareLists(&aux, right->dataPtr);
-            if (ret != -1)
+            if (ret != 0)
                 return ret;
 
         /* Case 3.5: Only Right is integer, add it to aux list and compare lists */
@@ -238,18 +238,27 @@ int8_t compareLists(listType* list1, listType* list2)
             aux.size = 1;
 
             ret = compareLists(left->dataPtr, &aux);
-            if (ret != -1)
+            if (ret != 0)
                 return ret;
         }
     }
 
     /* Check who run out of items... */
     if (list1->size == list2->size)
-        return -1;
-    else if (list1->size > list2->size)
         return 0;
+    else if (list1->size > list2->size)
+        return -1;
     else
-         return 1;
+        return 1;
+}
+
+int32_t compare(const void* ptr1, const void* ptr2)
+{
+    listType* l1 = *(listType**) ptr1;
+    listType* l2 = *(listType**) ptr2;
+
+    /* Turn around, so it returns 1 if b > a */
+    return compareLists(l2, l1);
 }
 
 
@@ -259,9 +268,10 @@ int32_t main()
     int32_t size;
     uint32_t index = 1;
     uint32_t part1 = 0;
+    uint32_t part2 = 1;
 
     uint32_t totalLists = 0;
-    listType* lists[MAX_INPUT_LISTS];
+    listType* lists[MAX_INPUT_LISTS] = { 0 };
 
     /* Read lines from stdin until EOF */
     while ((size = getLine(line, MAX_INPUT_LINE_LENGHT)) > -1)
@@ -282,7 +292,8 @@ int32_t main()
 
     printf("Parsed %u lists \n", totalLists);
 
-    /* Part 1 */
+    /* ---------------------------------------------------------------------- */
+    /* PART 1 */
     uint32_t i;
     for (i = 0; i < totalLists; i+=2)
     {
@@ -294,7 +305,30 @@ int32_t main()
 
     printf("Part 1: The sum of indeces is %u\n", part1);
 
+    /* ---------------------------------------------------------------------- */
+    /* PART 2 */
 
+    /* Add the two dividers to the list, and start a sorting process. */
+    char divider[6] = "[[2]]";
+    char divider2[6] = "[[6]]";
+    listType* dPtr1, *dPtr2;
+
+    dPtr1 = listCreate();
+    lists[totalLists] = dPtr1;
+    parseNestedLists(divider + 1, lists[totalLists++]);
+
+    dPtr2 = listCreate();
+    lists[totalLists] = dPtr2;
+    parseNestedLists(divider2 + 1, lists[totalLists++]);
+
+    qsort(lists, totalLists, sizeof(listType*), compare);
+
+    /* Search the indices */
+    for (i = 0; i < totalLists; i++)
+        if ((lists[i] == dPtr1) || (lists[i] == dPtr2))
+            part2 *= (i + 1);
+
+    printf("Part 2: The product of the divider indeces is %u\n", part2);
 
     /* Clean up. */
     for (i = 0; i < totalLists; i++)
