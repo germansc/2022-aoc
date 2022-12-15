@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define MAX_INPUT_LINE_LENGHT    (512)
-#define MAX_NESTED_LISTS         (10)
+#define MAX_INPUT_LISTS          (302)
 
 typedef enum {
     none,
@@ -260,8 +260,8 @@ int32_t main()
     uint32_t index = 1;
     uint32_t part1 = 0;
 
-    listType* list1 = listCreate();
-    listType* list2 = listCreate();
+    uint32_t totalLists = 0;
+    listType* lists[MAX_INPUT_LISTS];
 
     /* Read lines from stdin until EOF */
     while ((size = getLine(line, MAX_INPUT_LINE_LENGHT)) > -1)
@@ -272,31 +272,33 @@ int32_t main()
 
         /* Sanity check, and parse the first list... */
         if (*line == '[')
-            parseNestedLists(line + 1, list1);
+        {
+            lists[totalLists] = listCreate();
+            parseNestedLists(line + 1, lists[totalLists]);
 
-        /* Get the next string, and parse the next lists */
-        if (((size = getLine(line, MAX_INPUT_LINE_LENGHT)) < 1))
-            break;
-
-        if (*line == '[')
-            parseNestedLists(line + 1, list2);
-
-        /* Compare the lists > 0 wrong order, 1 right order */
-        if (compareLists(list1, list2) == 1)
-            part1 += index;
-
-        index++;
-
-        listEmpty(list1);
-        listEmpty(list2);
+            totalLists++;
+        }
     }
 
+    printf("Parsed %u lists \n", totalLists);
+
     /* Part 1 */
+    uint32_t i;
+    for (i = 0; i < totalLists; i+=2)
+    {
+        if (compareLists(lists[i], lists[i + 1]) == 1)
+            part1 += index;
+        
+        index++;
+    }
 
-    printf("Part 1: The sum is %u\n", part1);
+    printf("Part 1: The sum of indeces is %u\n", part1);
 
-    listDestroy(list1);
-    listDestroy(list2);
+
+
+    /* Clean up. */
+    for (i = 0; i < totalLists; i++)
+        listDestroy(lists[i]);
 
     return 0;
 }
