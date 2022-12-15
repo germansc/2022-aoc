@@ -22,7 +22,6 @@ typedef struct list_s {
     uint8_t size;
     itemType* first;
     itemType* last;
-    struct list_s* parent;
 } listType;
 
 
@@ -51,7 +50,6 @@ listType* listCreate(void)
     listType* list = malloc(sizeof(listType));
     if ( list != NULL )
     {
-        list->parent = NULL;
         list->first = NULL;
         list->last = NULL;
         list->size = 0;
@@ -150,7 +148,6 @@ char* parseNestedLists(char* ptr, listType* list)
         {
             /* Create a new sublist, and parse its contents. */
             new = listCreate();
-            new->parent = list;
             listAddItem(list, (void *) new, list_t);
 
             ptr = parseNestedLists(ptr + 1, new);
@@ -303,4 +300,3 @@ int32_t main()
 
     return 0;
 }
-
