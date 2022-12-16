@@ -98,6 +98,9 @@ void buildWalls(mapType* m, char* input)
         input += used;
         start = end;
     }
+
+    m->height = m->maxy - m->miny;
+    m->width  = m->maxx - m->minx;
 }
 
 void printMap(mapType* m, uint32_t startX, uint32_t startY, uint32_t width, uint32_t height)
@@ -198,12 +201,12 @@ int32_t main()
 
     part2 = part1;
 
-    printMap(&map, map.minx - 2, 0, map.maxx - map.minx + 6, map.maxy + 2);
+    printMap(&map, map.minx - 2, 0, map.width + 6, map.maxy + 2);
 
     while (solveSand(&map, (positionType){500, 0}, 2) != 2)
         part2++;
 
-    printMap(&map, 500 - 40, 0, 80, map.maxy + 4);
+    printMap(&map, 500 - map.width, 0, 2 * map.width, map.maxy + 4);
 
     /* Print the results for both parts of the challenge. */
     printf("Part 1: %u\n", part1);
