@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <math.h>
 
@@ -9,6 +10,7 @@
 #define MAX_SENSORS               (35)
 
 #define TARGET_ROW          (2000000U)
+#define PART2_LIMIT         (4000000U)
 
 typedef struct {
     int32_t x;
@@ -41,6 +43,7 @@ int32_t getLine(char* buff, uint32_t size)
 
     return len;
 }
+
 
 uint32_t getRange(positionType a, positionType b)
 {
@@ -104,12 +107,28 @@ int8_t getScanRange(sensorType* slist, uint32_t len, uint32_t targetrow, positio
     return foundIntersection;
 }
 
+int8_t canBeBeacon(sensorType* slist, uint32_t len, positionType pos)
+{
+    if (slist == NULL)
+        return -1;
+
+    uint32_t i;
+
+    for (i = 0; i < len; i++)
+        if (getRange(pos, slist[i].pos) <= slist[i].range)
+            return 0;
+
+    /* By default, any position can containe a beacon. */
+    return 1;
+}
+
+
+
 int32_t main()
 {
     char line[MAX_INPUT_LINE_LENGHT];
     int32_t size;
     uint32_t part1 = 0;
-    uint32_t part2 = 0;
 
     sensorType s[MAX_SENSORS] = { 0 };
     uint8_t totalSensors = 0;
@@ -128,26 +147,62 @@ int32_t main()
 
     positionType start, end;
     if (getScanRange(s, totalSensors, TARGET_ROW, &start, &end) == 1)
-        printf("\nScanrange: (%d,%d) to (%d,%d)\n", start.x, start.y, end.x, end.y);
+        printf("\nPART 1 Scan: (%d,%d) to (%d,%d)\n", start.x, start.y, end.x, end.y);
 
     /* Part 1 */
     part1 = 0;
-
-    uint32_t i;
-    while (start.x++ < end.x)
-    {
-        for (i = 0; i < totalSensors; i++)
-            if (getRange(start, s[i].pos) < s[i].range)
-                continue;
-
-        if (i == totalSensors)
+    
+    while (start.x++ <= end.x)
+        if (canBeBeacon(s, totalSensors, start) == 0)
             part1++;
+
+    printf("PART 1: %u positions cannot contain a becon at row %u\n", part1, TARGET_ROW);
+
+    /* Part 2 */
+    uint8_t found = 0;
+    uint32_t i, j;
+    
+    /* Progress report */
+    uint32_t done = 0;
+    clock_t time = 0;
+
+    for (j = 0; j < PART2_LIMIT; j++)
+    {
+        clock_t begin = clock();
+
+        for (i = 0; i < PART2_LIMIT; i++)
+        {
+            if (canBeBeacon(s, totalSensors, (positionType){i, j}) == 1)
+            {
+                found = 1;
+                break;
+            }
+        }
+
+        /* Check for early break. */
+        if (found != 0)
+            break;
+
+        done = j + 1;
+        
+        /* Compute an incremental average of the used time */
+        time = time + ((clock() - begin) - time) / done;
+
+        double left_s = time * (PART2_LIMIT - done) / CLOCKS_PER_SEC;
+       
+        uint32_t hours = left_s / 3600;
+        uint32_t minutes = ((uint64_t) left_s % 3600) / 60;
+        uint32_t seconds = (((uint64_t) left_s % 3600) % 60);
+
+        printf("\rPART 2: Search progress: %03.5f%% - ETA: %02u:%02u:%02u", 
+                            (j + 1.0) / PART2_LIMIT, 
+                            hours, minutes, seconds);
+        fflush(stdout);
     }
 
     /* Print the results for both parts of the challenge. */
-    printf("Part 1: %u\n", part1);
-    printf("Part 2: %u\n", part2 + 1);
+    
+    printf("\n\nPART 2: Position found at (%u, %u) with frequency %u\n", i, j, (i * 4000000 + j));
 
     return 0;
 }
-
