@@ -122,6 +122,35 @@ int8_t canBeBeacon(sensorType* slist, uint32_t len, positionType pos)
     return 1;
 }
 
+int8_t isInMainBoundary(positionType p)
+{
+    return ((p.x >= 0) && (p.x <= (int32_t)PART2_LIMIT) && (p.y >= 0) && (p.y <= (int32_t)PART2_LIMIT));
+}
+
+int8_t getNextPerimeterPoint(sensorType* s, positionType* p)
+{
+    /* QUAD 1 */
+    if (p->x >= s->pos.x && p->y <= s->pos.y) {
+        p->x++;
+        p->y++;
+    } else if (p->x >= s->pos.x && p->y >= s->pos.y) {
+        p->x--;
+        p->y++;
+    } else if (p->x <= s->pos.x && p->y >= s->pos.y){
+        p->x--;
+        p->y--;
+    } else {
+        p->x++;
+        p->y--;
+    }
+
+    /* Check if we are back at the top and return 0 in that case. */
+    if ((p->x == s->pos.x) && (p->y < s->pos.y))
+        return 0;
+    else
+        return 1;
+}
+
 
 int32_t main()
 {
@@ -158,58 +187,30 @@ int32_t main()
     printf("PART 1: %u positions cannot contain a becon at row %u\n", part1, TARGET_ROW);
 
     /* Part 2 */
-
-    /* TODO: Find a better solution.*/ 
-
-
-    return -1;
-
-    /* ------------------ Brute Force ---------------------------------- */
-
+    uint8_t sensor;
     uint8_t found = 0;
-    uint32_t i, j;
+    positionType test;
     
-    /* Progress report */
-    uint32_t done = 0;
-    clock_t time = 0;
-
-    for (j = 0; j < PART2_LIMIT; j++)
+    for (sensor = 0; sensor < totalSensors; sensor++)
     {
-        clock_t begin = clock();
+        test.x = s[sensor].pos.x;
+        test.y = s[sensor].pos.y - s[sensor].range - 1;
 
-        for (i = 0; i < PART2_LIMIT; i++)
-        {
-            if (canBeBeacon(s, totalSensors, (positionType){i, j}) == 1)
+        /* Check the perimeter. */
+        do {
+            if (isInMainBoundary(test) && canBeBeacon(s, totalSensors, test))
             {
                 found = 1;
                 break;
             }
-        }
+        } while (getNextPerimeterPoint(s + sensor, &test) != 0);
 
-        /* Check for early break. */
-        if (found != 0)
+        if (found)
             break;
-
-        done = j + 1;
-        
-        /* Compute an incremental average of the used time */
-        time = time + ((clock() - begin) - time) / done;
-
-        double left_s = time * (PART2_LIMIT - done) / CLOCKS_PER_SEC;
-       
-        uint32_t hours = left_s / 3600;
-        uint32_t minutes = ((uint64_t) left_s % 3600) / 60;
-        uint32_t seconds = (((uint64_t) left_s % 3600) % 60);
-
-        printf("\rPART 2: Search progress: %03.5f%% - ETA: %02u:%02u:%02u", 
-                            (j + 1.0) / PART2_LIMIT, 
-                            hours, minutes, seconds);
-        fflush(stdout);
     }
 
-    /* Print the results for both parts of the challenge. */
-    
-    printf("\n\nPART 2: Position found at (%u, %u) with frequency %u\n", i, j, (i * 4000000 + j));
+    uint64_t freq = (test.x * 4000000UL + test.y);
+    printf("PART 2: Position found at (%u, %u) with frequency %lu\n", test.x, test.y, freq);
 
     return 0;
 }
