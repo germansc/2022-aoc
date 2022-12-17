@@ -179,7 +179,7 @@ int32_t main()
 
     /* Part 1 */
     part1 = 0;
-    
+
     while (start.x++ <= end.x)
         if (canBeBeacon(s, totalSensors, start) == 0)
             part1++;
@@ -189,8 +189,8 @@ int32_t main()
     /* Part 2 */
     uint8_t sensor;
     uint8_t found = 0;
-    positionType test;
-    
+    positionType test = { 0 };
+
     for (sensor = 0; sensor < totalSensors; sensor++)
     {
         test.x = s[sensor].pos.x;
@@ -210,7 +210,7 @@ int32_t main()
     }
 
     uint64_t freq = (test.x * 4000000UL + test.y);
-    printf("PART 2: Position found at (%u, %u) with frequency %lu\n", test.x, test.y, freq);
+    printf("PART 2: Position found at (%d, %d) with frequency %lu\n", test.x, test.y, freq);
 
     return 0;
 }
